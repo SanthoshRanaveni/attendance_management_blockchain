@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <link rel="stylesheet" type="text/css" href="main.css">
+
+    <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@0.18.2/dist/web3.min.js"></script>
+
+</head>
+<body>
+    <div class="container">
+        
+        <h1>Attendance Management using Smart Contract</h1>
+        &nbsp;&nbsp;
+        <fieldset><legend>Student Details</legend>
+            <h2 id="studentdetails"></h2>
+
+            <label for="name" class="col-lg-2 control-label">Student ID</label>
+            <input id="id" type="text" placeholder="Enter Student ID">
+
+            <label for="name" class="col-lg-2 control-label">Age</label>
+            <input id="age" type="text" placeholder="Enter Age">
+
+            <label for="name" class="col-lg-2 control-label">First Name</label>
+            <input id="fname" type="text"  placeholder="Enter First Name">
+
+            <label for="name" class="col-lg-2 control-label">Last Name</label>
+            <input id="lname" type="text" placeholder="Enter Last Name">
+
+            <button id="button">Update Student</button>
+        </fieldset>
+        &nbsp;&nbsp;
+        <fieldset><legend>Increment Attendance</legend>
+
+            <h2 id="attendance"></h2>
+
+            <label for="name" class="col-lg-2 control-label">Student ID</label>
+            <input id="idAttendance" type="text" placeholder="Enter the Student ID to increment the attendance">
+
+            <button id="btnIncAttnd">Increment Attendance</button>
+        </fieldset>
+        &nbsp;&nbsp;
+
+        <fieldset><legend>Decrement Attendance</legend>            
+            <h2 id="attendanceDec"></h2>
+            <label for="name" class="col-lg-2 control-label">Student ID</label>
+            <input id="idAttendanceDec" type="text" placeholder="Enter the Student ID to decrement the attendance">
+            <button id="btnDecAttnd">Decrement Attendance</button>
+        </fieldset>
+
+        &nbsp;&nbsp;
+        <fieldset><legend>Student Details</legend>
+            <h2 id="stdDetails"></h2>
+            <label for="name" class="col-lg-2 control-label">Student ID</label>
+            <input id="idDetails" type="text" placeholder="Enter the  student ID  to get the details">
+
+            <button id="btnDetails">Get Details</button>
+        </fieldset>
+        <fieldset><legend>Get All Student Details</legend>
+            <h2 id="stdAllDetails"></h2>
+            <button id="btnAllDetails">Get all Details</button>
+        </fieldset>
+        &nbsp;&nbsp;
+        <fieldset><legend>Students Count</legend>
+            <h2 id="stdCount"></h2>
+            <button id="btnCount">Students Count</button>
+        </fieldset>
+        &nbsp;&nbsp;
+        <fieldset><legend>Students ID List</legend>
+            <h2 id="stdIds"></h2>
+            <button id="btnStdIds">Get Student IDs</button>
+        </fieldset>
+    </div>
+
+    
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+
+    <script>
+       // Our future code here..
+
+        if (typeof web3 !== 'undefined') {
+            web3 = new Web3(web3.currentProvider);
+        } else {
+            // set the provider you want from Web3.providers
+            web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+
+            web3.eth.defaultAccount = web3.eth.accounts[0];
+
+            var attendanceContract = web3.eth.contract([ { "constant": false, "inputs": [ { "name": "_studId", "type": "uint256" }, { "name": "_age", "type": "uint256" }, { "name": "_fName", "type": "string" }, { "name": "_lName", "type": "string" } ], "name": "createStudent", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "_studId", "type": "uint256" } ], "name": "decrementAttendance", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "_studId", "type": "uint256" } ], "name": "incrementAttendance", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "anonymous": false, "inputs": [ { "indexed": false, "name": "fName", "type": "string" }, { "indexed": false, "name": "lName", "type": "string" }, { "indexed": false, "name": "age", "type": "uint256" } ], "name": "studentCreationEvent", "type": "event" }, { "constant": true, "inputs": [], "name": "countStudents", "outputs": [ { "name": "", "type": "uint256" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [ { "name": "_studId", "type": "uint256" } ], "name": "getParticularStudent", "outputs": [ { "name": "", "type": "string" }, { "name": "", "type": "string" }, { "name": "", "type": "uint256" }, { "name": "", "type": "uint256" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "getStudents", "outputs": [ { "name": "", "type": "uint256[]" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [ { "name": "", "type": "uint256" } ], "name": "studIdList", "outputs": [ { "name": "", "type": "uint256" } ], "payable": false, "stateMutability": "view", "type": "function" } ]);
+
+            var AttendanceManagement = attendanceContract.at('0x1d6a67a7d4f0c45ba5e88d4d86f0cb7177486d9c');
+            console.log(AttendanceManagement);
+
+        $("#button").click(function() {
+            AttendanceManagement.createStudent($("#id").val(), $("#age").val(),$("#fname").val(),$("#lname").val());
+        });
+
+        //For Incrementing Attendance
+        $("#btnIncAttnd").click(function() {
+            AttendanceManagement.incrementAttendance($("#idAttendance").val());
+            AttendanceManagement.getParticularStudent($("#idAttendance").val(),function(error, result){
+            if(!error)
+            {
+                $("#attendance").html('Attendance Incremented to '+result[3]+' for '+result[0]+' '+result[1]);
+               
+                
+                console.log(result);
+            }
+            else
+                console.error(error);
+            });
+        });
+
+        //For Decrementing Attendance
+        $("#btnDecAttnd").click(function() {
+            AttendanceManagement.decrementAttendance($("#idAttendanceDec").val());
+            AttendanceManagement.getParticularStudent($("#idAttendanceDec").val(),function(error, result){
+            if(!error)
+            {
+                $("#attendanceDec").html('Attendance Decremented to '+result[3]+' for '+result[0]+' '+result[1]);
+                console.log(result);
+            }
+            else
+                console.error(error);
+            });
+        });
+
+        //For getting student details
+        $("#btnDetails").click(function() {
+            
+            AttendanceManagement.getParticularStudent($("#idDetails").val(),function(error, result){
+            if(!error)
+            {
+                $("#stdDetails").html('Name: '+result[0]+' '+result[1]+'<br />'+'Age: '+result[2]+'<br />'+'Attendace : '+result[3]+' Days present');
+               
+                
+                console.log(result);
+            }
+            else
+                console.error(error);
+            });
+        });
+
+        //For getting Student Count
+        $("#btnCount").click(function() {
+            AttendanceManagement.countStudents(function(error, result){
+            if(!error)
+            {
+                $("#stdCount").html('There are currently '+result+' students');
+                
+                console.log(result);
+            }
+            else
+                console.error(error);
+            });
+        });
+
+        //For getting Student ID List
+        $("#btnStdIds").click(function() {
+            $("#stdIds").html("")
+            AttendanceManagement.getStudents(function(error, result){
+            if(!error)
+            {
+                $.each(result, function(index, value){
+                    $("#stdIds").append("Student "+(index+1) + ": " + value + '<br>');
+                });
+                console.log(result[0]);
+            }
+            else
+                console.error(error);
+            });
+        });
+
+        //For getting all Students Details
+        $("#btnAllDetails").click(function() {
+            $("#stdAllDetails").html("")
+            AttendanceManagement.getStudents(function(error, result){
+            if(!error)
+            {
+                $.each(result, function(index, value){
+                    AttendanceManagement.getParticularStudent(value,function(error, result){
+                    if(!error)
+                    {
+                        $("#stdAllDetails").append('Name: '+result[0]+' '+result[1]+'<br />'+'Age: '+result[2]+'<br />'+'Attendace : '+result[3]+' Days present'+'<br />'+'<br />');
+                    
+                        
+                        console.log(result);
+                    }
+                    else
+                        console.error(error);
+                    });
+                });
+                console.log(result[0]);
+            }
+            else
+                console.error(error);
+            });
+        });
+
+    }
+    </script>
+
+</body>
+</html>
